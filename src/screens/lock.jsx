@@ -38,7 +38,7 @@ export function SetupScreen({ onReady }) {
       const session = await createVault(pw);
       await onReady(session, { isNew: true });
     } catch (err) {
-      app.toast(`Création impossible : ${err.message}`, 'error');
+      app.toast(`Création impossible : ${err.message}`, 'error');
       setBusy(false);
     }
   };
@@ -84,7 +84,7 @@ export function SetupScreen({ onReady }) {
         <label class="label" for="pw1">
           Mot de passe maître
         </label>
-        <PasswordInput id="pw1" value={pw} onInput={setPw} placeholder="ex. : Cerise-Tram-Lundi-42" />
+        <PasswordInput id="pw1" value={pw} onInput={setPw} placeholder="ex. : Cerise-Tram-Lundi-42" />
         <StrengthMeter password={pw} />
         <label class="label" for="pw2">
           Confirmez-le
@@ -92,7 +92,7 @@ export function SetupScreen({ onReady }) {
         <PasswordInput id="pw2" value={confirm} onInput={setConfirm} onEnter={create} />
         <label class="check">
           <input type="checkbox" checked={understood} onChange={(e) => setUnderstood(e.currentTarget.checked)} />
-          <span>J’ai compris : si j’oublie ce mot de passe, personne ne pourra récupérer mes données.</span>
+          <span>J’ai compris : si j’oublie ce mot de passe, personne ne pourra récupérer mes données.</span>
         </label>
         {tried && (problem || !understood) && (
           <p class="form-error">{problem || 'Cochez la case pour continuer.'}</p>
@@ -130,7 +130,7 @@ export function LockScreen({ file, bio, autoPrompt, onUnlocked, onBioInvalid }) 
       await finish(session);
     } catch (err) {
       setState('error');
-      setError(err instanceof WrongPasswordError ? 'Mot de passe incorrect.' : `Erreur : ${err.message}`);
+      setError(err instanceof WrongPasswordError ? 'Mot de passe incorrect.' : `Erreur : ${err.message}`);
       setPw('');
     }
   };
@@ -192,7 +192,6 @@ export function LockScreen({ file, bio, autoPrompt, onUnlocked, onBioInvalid }) 
           </button>
         )}
       </div>
-      {app.restoredHint && <p class="vault-foot">{app.restoredHint}</p>}
     </main>
   );
 }
@@ -213,7 +212,7 @@ export function BiometricOffer({ onDone }) {
         <div class="bio-badge" aria-hidden="true">
           <Fingerprint size={56} strokeWidth={1.5} />
         </div>
-        <h1 class="vault-title">Déverrouiller avec l’empreinte ?</h1>
+        <h1 class="vault-title">Déverrouiller avec l’empreinte ?</h1>
         <p class="vault-lead">
           Plus besoin de retaper le mot de passe maître à chaque ouverture. Il reste demandé si les empreintes du
           téléphone changent.

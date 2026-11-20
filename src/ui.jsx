@@ -168,11 +168,6 @@ export function Dialog({ dialog, close }) {
   const [pw, setPw] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    setPw('');
-    setError('');
-    setBusy(false);
-  }, [dialog]);
   if (!dialog) return null;
 
   const submit = async () => {

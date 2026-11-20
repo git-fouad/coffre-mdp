@@ -1,2 +1,8 @@
 import { render } from 'preact';
-render(<p style="font-family:sans-serif;padding:2rem">Coffre : version de test de la compilation.</p>, document.getElementById('app'));
+import '@fontsource/atkinson-hyperlegible-next/latin-400.css';
+import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
+import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
+import './styles.css';
+import { App } from './app.jsx';
+
+render(<App />, document.getElementById('app'));
