@@ -1,0 +1,115 @@
+name: Compiler l'APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-apk
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Tests (chiffrement, import CSV, générateur)
+        run: npm test
+
+      - name: Construire l'interface
+        run: npm run build
+
+      - name: Copier l'interface dans le projet Android
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Préparer la clé de signature
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/coffre.p12"
+            echo "keystore=$RUNNER_TEMP/coffre.p12" >> "$GITHUB_OUTPUT"
+            echo "task=assembleRelease" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning title=Clé de signature absente::Ajoutez les secrets KEYSTORE_BASE64 et KEYSTORE_PASSWORD (Settings > Secrets and variables > Actions). En attendant, seul un APK de test est compilé et rien n'est publié."
+            echo "keystore=" >> "$GITHUB_OUTPUT"
+            echo "task=assembleDebug" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compiler l'APK
+        working-directory: android
+        env:
+          COFFRE_KEYSTORE: ${{ steps.sign.outputs.keystore }}
+          COFFRE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew --no-daemon --console=plain ${{ steps.sign.outputs.task }} 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Résumer les erreurs de compilation
+        if: failure()
+        run: |
+          LOG="$RUNNER_TEMP/build.log"
+          [ -f "$LOG" ] || exit 0
+          # Regroupe les lignes d'erreur en quelques annotations lisibles depuis l'onglet Actions.
+          grep -nE "error:|^e: |What went wrong|FAILED|Exception|Could not|> " "$LOG" | head -120 > "$RUNNER_TEMP/errors.txt" || true
+          split -l 20 "$RUNNER_TEMP/errors.txt" "$RUNNER_TEMP/err_part_" || true
+          for f in "$RUNNER_TEMP"/err_part_*; do
+            [ -f "$f" ] || continue
+            msg=$(sed -e 's/%/%25/g' -e 's/\r//g' "$f" | awk 'BEGIN{ORS="%0A"} {print}')
+            echo "::error title=Erreur de compilation::${msg}"
+          done
+
+      - name: Renommer l'APK
+        id: apk
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          SRC=$(find android/app/build/outputs/apk -name "*.apk" | head -1)
+          mkdir -p out
+          if [ "${{ steps.sign.outputs.task }}" = "assembleRelease" ]; then
+            cp "$SRC" out/coffre.apk
+          else
+            cp "$SRC" "out/coffre-test-$VERSION.apk"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coffre-${{ steps.apk.outputs.version }}
+          path: out/*.apk
+          retention-days: 30
+
+      - name: Publier la version
+        if: steps.sign.outputs.task == 'assembleRelease'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.apk.outputs.version }}"
+          gh release create "v$VERSION" out/coffre.apk \
+            --title "Coffre $VERSION" \
+            --notes "Version $VERSION. Sur le téléphone, ouvrez le fichier coffre.apk ci-dessous pour installer ou mettre à jour l'appli (vos mots de passe sont conservés)." \
+            --latest

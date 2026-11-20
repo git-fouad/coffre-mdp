@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sauvegarde Google (Android 11 et moins) : le coffre chiffré est inclus,
+     la clé d'empreinte (liée à ce téléphone) est exclue. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="coffre_biometric.xml" />
+</full-backup-content>

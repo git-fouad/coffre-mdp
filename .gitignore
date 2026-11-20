@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+# Ne jamais versionner la clé de signature ni ses mots de passe
+*.p12
+*.jks
+*.keystore
+secrets*.txt
+tools/icon-preview.png

@@ -1,0 +1,15 @@
+{
+  "appId": "com.gitfouad.coffre",
+  "appName": "Coffre",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "coffre-mdp",
+  "version": "1.0.0",
+  "description": "Coffre : gestionnaire de mots de passe local pour Android",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
+    "@fontsource/atkinson-hyperlegible-mono": "^5.3.0",
+    "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
+    "hash-wasm": "^4.13.0",
+    "lucide-preact": "^1.76.0",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/cli": "^8.6.2",
+    "@preact/preset-vite": "^2.10.6",
+    "vite": "^8.3.8"
+  },
+  "type": "module",
+  "private": true
+}

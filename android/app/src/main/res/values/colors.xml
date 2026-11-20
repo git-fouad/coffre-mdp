@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vault_steel">#1D2B3A</color>
+    <color name="vault_brass">#D2A24F</color>
+    <color name="colorPrimary">#1D2B3A</color>
+    <color name="colorPrimaryDark">#1D2B3A</color>
+    <color name="colorAccent">#D2A24F</color>
+</resources>
