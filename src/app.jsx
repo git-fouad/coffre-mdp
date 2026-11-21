@@ -1,5 +1,5 @@
 // État global de l'appli : verrouillage, navigation, enregistrement du coffre.
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { App as CapApp } from '@capacitor/app';
 import { Ctx, Dialog, Toast } from './ui.jsx';
 import { BiometricOffer, LockScreen, SetupScreen } from './screens/lock.jsx';
@@ -193,6 +193,12 @@ export function App() {
   // ----------------------------------------------------------- navigation
   const push = (route) => {
     backHandler.current = null;
+    // En quittant la liste, on retient la position de défilement et la fiche ouverte.
+    const top = stateRef.current.stack[stateRef.current.stack.length - 1];
+    if (top && top.name === 'list') {
+      listState.current.scrollY = window.scrollY;
+      listState.current.lastId = route.id;
+    }
     setStack((s) => [...s, route]);
   };
   const pop = () => {
@@ -203,6 +209,25 @@ export function App() {
     backHandler.current = null;
     setStack((s) => [...s.slice(0, -1), route]);
   };
+
+  // Retour sur la liste : même position qu'avant. Autres écrans : en haut de page.
+  const topRoute = stack[stack.length - 1];
+  const routeKey = `${phase}-${stack.length}-${topRoute.name}-${topRoute.id || ''}`;
+  useLayoutEffect(() => {
+    if (phase !== 'unlocked') return;
+    if (topRoute.name !== 'list') {
+      window.scrollTo(0, 0);
+      return;
+    }
+    const { scrollY = 0, lastId } = listState.current;
+    window.scrollTo(0, scrollY);
+    // Si la liste a changé entre-temps, on s'assure que la fiche consultée reste visible.
+    const el = lastId && document.querySelector(`[data-entry-id="${CSS.escape(lastId)}"]`);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.top < 140 || r.bottom > window.innerHeight - 90) el.scrollIntoView({ block: 'center' });
+    }
+  }, [routeKey]);
 
   // --------------------------------------------------------- enregistrement
   const persist = (session) => {

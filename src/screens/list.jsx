@@ -133,6 +133,7 @@ export function ListScreen() {
             <li key={e.id}>
               <div
                 class="entry"
+                data-entry-id={e.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => app.push({ name: 'detail', id: e.id })}
